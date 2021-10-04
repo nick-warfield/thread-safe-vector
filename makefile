@@ -12,7 +12,7 @@ TEST_DIR = tests
 CC = ccache clang++
 OPT = O2
 
-CFLAGS = -std=c++17 -$(OPT) -Wall -Wextra -Wno-missing-braces -DDEBUG
+CFLAGS = -std=c++17 -$(OPT) -pthread -Wall -Wextra -Wno-missing-braces -DDEBUG
 LDFLAGS =
 
 CFLAGS += -I$(INCLUDE_DIR) -I$(LIBRARY_DIR)
