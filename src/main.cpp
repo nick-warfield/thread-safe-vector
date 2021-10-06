@@ -12,10 +12,10 @@ void test(
 		const char* test_name,
 		uint32_t data_size,
 		uint32_t loop_count,
-		void (*func)(vec<int>&)) {
+		void (*func)(vec<long long>&)) {
 	cout << boolalpha;
 	vector vect(data_size, 0);
-	vec<int> v;
+	vec<long long> v;
 	v.m_data.resize(data_size);
 	iota(v.m_data.begin(), v.m_data.end(), 10);
 
@@ -41,16 +41,16 @@ void test(
 }
 
 int main() {
-	uint32_t data_size = 1000000, loop_count = 100;
+	uint32_t data_size = 1000000, loop_count = 1000;
 
 	test("Lock Once:", data_size, loop_count,
-	[](vec<int>& v) {
-		thread a([&](vec<int>& v) {
+	[](vec<long long>& v) {
+		thread a([&](vec<long long>& v) {
 				auto [data, lg] = v.data();
 				for (auto& i : data)
 					i++;
 			}, ref(v));
-		thread b([&](vec<int>& v) {
+		thread b([&](vec<long long>& v) {
 				auto [data, lg] = v.data();
 				for (auto& i : data)
 					i = 0;
@@ -61,8 +61,8 @@ int main() {
 	});
 
 	test("Sequential Lock:", data_size, loop_count,
-	[](vec<int>& v) {
-		thread a([](vec<int>& v) {
+	[](vec<long long>& v) {
+		thread a([](vec<long long>& v) {
 				auto [data, lg] = v.data();
 				for (auto& i : data)
 					i++;
@@ -70,19 +70,19 @@ int main() {
 					i = 0;
 			}, ref(v));
 		a.join();
-		thread b([](int i) { i++; }, 1);
+		thread b([](long long i) { i++; }, 1);
 		b.join();
 	});
 
 	test("Sequential No Lock:", data_size, loop_count,
-	[](vec<int>& v) {
-		thread a([](vec<int>& v) {
+	[](vec<long long>& v) {
+		thread a([](vec<long long>& v) {
 				for (auto& i : v.m_data)
 					i++;
 			}, ref(v));
 		a.join();
 
-		thread b([](vec<int>& v) {
+		thread b([](vec<long long>& v) {
 				for (auto& i : v.m_data)
 					i = 0;
 			}, ref(v));
@@ -90,12 +90,12 @@ int main() {
 	});
 
 	test("No Lock:", data_size, loop_count,
-	[](vec<int>& v) {
-		thread a([](vec<int>& v) {
+	[](vec<long long>& v) {
+		thread a([](vec<long long>& v) {
 				for (auto& i : v.m_data)
 					i++;
 			}, ref(v));
-		thread b([](vec<int>& v) {
+		thread b([](vec<long long>& v) {
 				for (auto& i : v.m_data)
 					i = 0;
 			}, ref(v));
@@ -105,7 +105,7 @@ int main() {
 	});
 
 	test("One Thread:", data_size, loop_count,
-	[](vec<int>& v) {
+	[](vec<long long>& v) {
 		lock_guard lg(v.m_mutex);
 		for (auto& i : v.m_data)
 			i++;
@@ -114,13 +114,13 @@ int main() {
 	});
 
 	test("Locking Iterator", data_size, loop_count,
-	[](vec<int>& v) {
-		thread a([](vec<int>& v) {
+	[](vec<long long>& v) {
+		thread a([](vec<long long>& v) {
 			for (auto& i : v)
 				i++;
 			}, ref(v));
 		a.join();
-		thread b([](vec<int>& v) {
+		thread b([](vec<long long>& v) {
 			for (auto& i : v)
 				i = 0;
 			}, ref(v));

@@ -2,8 +2,7 @@
 #include <cstddef>
 #include <vector>
 #include <mutex>
-#include <condition_variable>
-#include <iostream>
+#include <sstream>
 
 template <typename T>
 struct vec {
@@ -13,27 +12,10 @@ struct vec {
 	struct Iterator {
 		Iterator(size_t index, vec<T> *vector) :
 			m_index(index),
+			m_lock(vector->m_mutex, std::defer_lock),
 			m_vector(vector)
 		{
-			if (index < vector->m_data.size()) {
-				m_lock = std::unique_lock(m_vector->m_mutex);
-				m_vector->m_cv.wait(m_lock,
-						[this]() { return !m_vector->in_use; });
-				m_vector->in_use = true;
-			} else {
-				m_lock = std::unique_lock(m_vector->m_mutex, std::defer_lock);
-			}
-		}
-		~Iterator() {
-			if (m_lock) {
-				m_vector->in_use = false;
-				m_vector->m_cv.notify_all();
-			}
-		}
-
-		bool can_go() {
-			return !m_vector->in_use
-				&& m_index < m_vector->m_data.size();
+			if (index < vector->m_data.size()) m_lock.lock();
 		}
 
 		T& operator*() const {
@@ -90,6 +72,4 @@ struct vec {
 // but I don't wanna wright an entire class interface
 	std::vector<T> m_data;
 	std::mutex m_mutex;
-	std::condition_variable m_cv;
-	bool in_use = false;
 };
